@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Parking Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0B1A2E;--navy2:#152340;--navy3:#1E3059;
+  --blue:#2563EB;--blue-h:#1D55D4;--blue-s:#EFF4FF;
+  --green:#16A34A;--green-bg:#DCFCE7;--green-b:#BBF7D0;
+  --red:#DC2626;--red-bg:#FEE2E2;--red-b:#FECACA;
+  --amber:#D97706;--amber-bg:#FEF9C3;--amber-b:#FDE68A;
+  --bg:#EEF2F8;--card:#FFFFFF;
+  --text:#0F172A;--text2:#475569;--text3:#94A3B8;
+  --border:#E2E8F0;--border2:#CBD5E1;
+  --radius:10px;--radius-sm:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.05);
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+mono{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.85em;letter-spacing:.02em}
+
+/* ── NAVBAR ── */
+nav{
+  background:var(--navy);color:#fff;
+  display:flex;align-items:center;gap:16px;
+  padding:0 28px;height:62px;position:sticky;top:0;z-index:100;
+  border-bottom:1px solid var(--navy3);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;margin-right:auto}
+.nav-icon{
+  width:34px;height:34px;background:var(--blue);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+}
+.nav-title{font-size:15px;font-weight:600;letter-spacing:.01em}
+.nav-sub{font-size:11px;color:#94A3B8;letter-spacing:.04em;text-transform:uppercase}
+.nav-stat{
+  display:flex;flex-direction:column;align-items:center;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:6px 18px;min-width:100px;
+}
+.nav-stat-val{font-size:20px;font-weight:600;line-height:1.2}
+.nav-stat-lbl{font-size:10px;color:#94A3B8;letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.stat-green .nav-stat-val{color:#4ADE80}
+.stat-blue .nav-stat-val{color:#60A5FA}
+.stat-amber .nav-stat-val{color:#FCD34D}
+.stat-teal .nav-stat-val{color:#2DD4BF}
+
+/* ── LAYOUT ── */
+.main-wrap{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:20px 24px;max-width:1400px;margin:0 auto}
+
+/* ── CARDS ── */
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.card-head{
+  padding:12px 16px 10px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.card-head-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.card-head-title{font-size:13px;font-weight:600;letter-spacing:.01em}
+.card-body{padding:14px 16px}
+
+/* ── FORMS ── */
+.left-col{display:flex;flex-direction:column;gap:14px}
+label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;letter-spacing:.02em}
+input[type=text],input[type=number],select{
+  width:100%;padding:8px 11px;border:1px solid var(--border2);
+  border-radius:var(--radius-sm);font-family:inherit;font-size:13px;
+  color:var(--text);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;
+}
+input[type=text]:focus,input[type=number]:focus,select:focus{
+  border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{opacity:1}
+select{cursor:pointer}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row-full{margin-bottom:10px}
+.btn{
+  width:100%;padding:9px 16px;border:none;border-radius:var(--radius-sm);
+  font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  transition:background .15s,transform .08s;letter-spacing:.02em;
+}
+.btn:active{transform:scale(.98)}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue-h)}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#B91C1C}
+.btn-slate{background:#334155;color:#fff}
+.btn-slate:hover{background:#1E293B}
+.msg{
+  font-size:12px;font-weight:500;padding:7px 10px;border-radius:var(--radius-sm);
+  margin-top:8px;display:none;line-height:1.4;
+}
+.msg.ok{background:var(--green-bg);color:#15803D;border:1px solid var(--green-b)}
+.msg.err{background:var(--red-bg);color:#B91C1C;border:1px solid var(--red-b)}
+.msg.info{background:var(--amber-bg);color:#92400E;border:1px solid var(--amber-b)}
+.msg.show{display:block}
+
+/* ── RIGHT COLUMN ── */
+.right-col{display:flex;flex-direction:column;gap:14px}
+
+/* ── SLOT GRID ── */
+.slot-section{margin-bottom:10px}
+.slot-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;padding-left:2px}
+.slot-grid{display:flex;flex-wrap:wrap;gap:8px}
+.slot{
+  width:80px;height:72px;border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  border:2px solid;cursor:default;transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+}
+.slot.free{background:var(--green-bg);border-color:var(--green-b)}
+.slot.occupied{background:var(--red-bg);border-color:var(--red-b)}
+.slot.queued-in{animation:slotPop .35s ease}
+@keyframes slotPop{0%{transform:scale(.85)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
+.slot-id{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500}
+.slot.free .slot-id{color:var(--green)}
+.slot.occupied .slot-id{color:var(--red)}
+.slot-status{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.slot.free .slot-status{color:#22C55E}
+.slot.occupied .slot-status{color:var(--red)}
+.slot-vnum{
+  font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:500;
+  color:var(--red);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-align:center;
+}
+.slot-badge{
+  position:absolute;top:3px;right:4px;width:7px;height:7px;
+  border-radius:50%;
+}
+.slot.free .slot-badge{background:var(--green)}
+.slot.occupied .slot-badge{background:var(--red)}
+
+/* ── QUEUE ── */
+.queue-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.queue-box{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.queue-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.queue-list{display:flex;flex-wrap:wrap;gap:5px;min-height:28px}
+.q-chip{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;
+  background:var(--amber-bg);color:#92400E;border:1px solid var(--amber-b);
+  border-radius:4px;padding:3px 8px;
+}
+.queue-empty{font-size:12px;color:var(--text3);font-style:italic}
+
+/* ── HISTORY ── */
+.history-wrap{grid-column:1/-1;padding-bottom:24px}
+.history-table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{background:#F8FAFC;border-bottom:2px solid var(--border)}
+th{padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:hover{background:#F8FAFC}
+td{padding:9px 14px;font-size:13px;color:var(--text)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.04em}
+.badge-car{background:#EFF4FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.badge-bike{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0}
+.fee-cell{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;color:var(--green)}
+.empty-row td{text-align:center;color:var(--text3);font-size:13px;padding:28px 14px;font-style:italic}
+
+/* ── SEARCH RESULT ── */
+.search-result{
+  background:var(--blue-s);border:1px solid #BFDBFE;border-radius:var(--radius-sm);
+  padding:8px 12px;margin-top:8px;font-size:12px;color:#1E40AF;display:none;
+}
+.search-result.show{display:block}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── COUNT BADGE ── */
+.count-pill{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;border-radius:9px;padding:0 5px;
+  font-size:10px;font-weight:700;background:var(--blue);color:#fff;margin-left:6px;
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-icon">🅿</div>
+    <div>
+      <div class="nav-title">Smart Parking Management System</div>
+      <div class="nav-sub">Amrita Vishwa Vidyapeetham · Faridabad</div>
+    </div>
+  </div>
+  <div class="nav-stat stat-green">
+    <div class="nav-stat-val" id="stat-cars">0</div>
+    <div class="nav-stat-lbl">Cars Parked</div>
+  </div>
+  <div class="nav-stat stat-blue">
+    <div class="nav-stat-val" id="stat-bikes">0</div>
+    <div class="nav-stat-lbl">Bikes Parked</div>
+  </div>
+  <div class="nav-stat stat-amber">
+    <div class="nav-stat-val" id="stat-queue">0</div>
+    <div class="nav-stat-lbl">In Queue</div>
+  </div>
+  <div class="nav-stat stat-teal">
+    <div class="nav-stat-val" id="stat-rev">₹0</div>
+    <div class="nav-stat-lbl">Revenue</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- LEFT: FORMS -->
+  <div class="left-col">
+
+    <!-- PARK -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon" style="background:#EFF4FF">🚗</div>
+        <div class="card-head-title">Park Vehicle</div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div>
+            <label>Vehicle Number</label>
+            <input type="text" id="park-num" placeholder="e.g. DL01AB1234" maxlength="12" autocomplete="off" style="text-transform:uppercase">
+          </div>
+          <div>
+            <label>Vehicle Type</label>
+            <select id="park-type">
+              <option value="CAR">🚗 Car</option>
+              <option value="BIKE">🏍 Bike</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-blue" onclick="handlePark()">Park Vehicle</button>
+        <div class="msg" id="park-msg"></div>
+      </div>
+    </div>
+
+    <!-- EXIT -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon" style="background:#FEF2F2">🚪</div>
+        <div class="card-head-title">Exit Vehicle</div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div>
+            <label>Vehicle Number</label>
+            <input type="text" id="exit-num" placeholder="e.g. DL01AB1234" maxlength="12" autocomplete="off" style="text-transform:uppercase">
+          </div>
+          <div>
+            <label>Hours Parked</label>
+            <input type="number" id="exit-hours" placeholder="e.g. 3" min="1" max="72">
+          </div>
+        </div>
+        <div style="background:#FFFBEB;border:1px solid var(--amber-b);border-radius:6px;padding:7px 10px;margin-bottom:10px;font-size:11px;color:#92400E">
+          <strong>Fee:</strong> Car = ₹50 + (hrs × ₹20) &nbsp;·&nbsp; Bike = ₹20 + (hrs × ₹10)
+        </div>
+        <button class="btn btn-red" onclick="handleExit()">Exit & Calculate Fee</button>
+        <div class="msg" id="exit-msg"></div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon" style="background:#F0FDF4">🔍</div>
+        <div class="card-head-title">Search Vehicle</div>
+      </div>
+      <div class="card-body">
+        <div class="form-row-full">
+          <label>Vehicle Number</label>
+          <input type="text" id="search-num" placeholder="Enter vehicle number" maxlength="12" autocomplete="off" style="text-transform:uppercase">
+        </div>
+        <button class="btn btn-slate" onclick="handleSearch()">Search</button>
+        <div class="search-result" id="search-result"></div>
+        <div class="msg" id="search-msg"></div>
+      </div>
+    </div>
+
+    <!-- QUICK STATS -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon" style="background:#F5F3FF">📊</div>
+        <div class="card-head-title">Lot Summary</div>
+      </div>
+      <div class="card-body" id="summary-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <!-- filled by render -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: GRID + QUEUE -->
+  <div class="right-col">
+
+    <!-- SLOT GRID -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon" style="background:#F0FDF4">🗺</div>
+        <div class="card-head-title">Parking Slot Map</div>
+      </div>
+      <div class="card-body">
+        <div class="slot-section">
+          <div class="slot-label">🚗 Car Slots — C1 to C10 (10 total)</div>
+          <div class="slot-grid" id="car-grid"></div>
+        </div>
+        <div class="slot-section" style="margin-top:16px;margin-bottom:0">
+          <div class="slot-label">🏍 Bike Slots — B1 to B5 (5 total)</div>
+          <div class="slot-grid" id="bike-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WAITING QUEUE -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon" style="background:#FFFBEB">⏳</div>
+        <div class="card-head-title">
+          Waiting Queue
+          <span class="count-pill" id="queue-count">0</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="queue-row">
+          <div class="queue-box">
+            <div class="queue-title">🚗 Car Queue</div>
+            <div class="queue-list" id="car-queue-list"></div>
+          </div>
+          <div class="queue-box">
+            <div class="queue-title">🏍 Bike Queue</div>
+            <div class="queue-list" id="bike-queue-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="card" style="flex:1">
+      <div class="card-head">
+        <div class="card-head-icon" style="background:#F8FAFC">📋</div>
+        <div class="card-head-title">
+          Transaction History
+          <span class="count-pill" id="hist-count" style="background:#64748B">0</span>
+        </div>
+      </div>
+      <div class="history-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Vehicle No.</th>
+              <th>Type</th>
+              <th>Slot</th>
+              <th>Hours</th>
+              <th>Fee</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr class="empty-row"><td colspan="6">No transactions yet. Park and exit vehicles to see history.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── STATE ── */
+const S = {
+  carSlots:  Array.from({length:10},(_,i)=>({id:'C'+(i+1),vehicle:null})),
+  bikeSlots: Array.from({length:5}, (_,i)=>({id:'B'+(i+1),vehicle:null})),
+  carStack:  [],
+  bikeStack: [],
+  carQueue:  [],
+  bikeQueue: [],
+  revenue:   0,
+  history:   []
+};
+
+/* init stacks — push high→low so C1/B1 popped first */
+(function init(){
+  for(let i=9;i>=0;i--) S.carStack.push('C'+(i+1));
+  for(let i=4;i>=0;i--) S.bikeStack.push('B'+(i+1));
+})();
+
+/* ── DSA HELPERS ── */
+const stackPop  = a => a.length ? a.pop() : null;
+const stackPush = (a,v) => a.push(v);
+const qEnqueue  = (a,v) => a.push(v);
+const qDequeue  = a => a.length ? a.shift() : null;
+const qHas      = (a,n) => a.some(v=>v.number===n);
+
+function findByVehicle(n){
+  for(const s of [...S.carSlots,...S.bikeSlots])
+    if(s.vehicle&&s.vehicle.number===n) return s;
+  return null;
+}
+function findById(id){
+  return [...S.carSlots,...S.bikeSlots].find(s=>s.id===id)||null;
+}
+function calcFee(type,hours){
+  return type==='CAR' ? 50+(hours*20) : 20+(hours*10);
+}
+
+/* ── ACTIONS ── */
+function parkVehicle(number,type){
+  if(findByVehicle(number))
+    return {ok:false,msg:`⚠ ${number} is already parked in the lot.`};
+  const stack = type==='CAR' ? S.carStack : S.bikeStack;
+  const queue = type==='CAR' ? S.carQueue : S.bikeQueue;
+  if(qHas(queue,number))
+    return {ok:false,msg:`⚠ ${number} is already in the waiting queue.`};
+  if(stack.length){
+    const slotId = stackPop(stack);
+    const slot = findById(slotId);
+    slot.vehicle = {number,type};
+    return {ok:true,msg:`✓ ${number} parked at Slot ${slotId}.`};
+  } else {
+    qEnqueue(queue,{number,type});
+    return {ok:true,queued:true,msg:`⏳ No free ${type==='CAR'?'car':'bike'} slot. ${number} added to queue (Position ${queue.length}).`};
+  }
+}
+
+function exitVehicle(number,hours){
+  const slot = findByVehicle(number);
+  if(!slot) return {ok:false,msg:`⚠ ${number} not found in the parking lot.`};
+  const v = slot.vehicle;
+  const fee = calcFee(v.type,hours);
+  S.revenue += fee;
+  S.history.unshift({number:v.number,type:v.type,slot:slot.id,hours,fee});
+  const queue = v.type==='CAR' ? S.carQueue : S.bikeQueue;
+  const stack = v.type==='CAR' ? S.carStack : S.bikeStack;
+  slot.vehicle = null;
+  let extra = '';
+  if(queue.length){
+    const next = qDequeue(queue);
+    slot.vehicle = next;
+    extra = ` Slot ${slot.id} auto-assigned to ${next.number}.`;
+  } else {
+    stackPush(stack,slot.id);
+  }
+  return {ok:true,msg:`✓ ${number} exited. Fee: ₹${fee}.${extra}`};
+}
+
+function searchVehicle(number){
+  const slot = findByVehicle(number);
+  if(slot) return {ok:true,msg:`📍 ${number} is parked at Slot ${slot.id} (${slot.vehicle.type}).`};
+  const cp = S.carQueue.findIndex(v=>v.number===number);
+  if(cp!==-1) return {ok:true,msg:`⏳ ${number} is in the Car waiting queue (Position ${cp+1}).`};
+  const bp = S.bikeQueue.findIndex(v=>v.number===number);
+  if(bp!==-1) return {ok:true,msg:`⏳ ${number} is in the Bike waiting queue (Position ${bp+1}).`};
+  return {ok:false,msg:`✗ ${number} not found in the lot or queue.`};
+}
+
+/* ── RENDER ── */
+function render(){
+  renderSlots('car-grid',  S.carSlots);
+  renderSlots('bike-grid', S.bikeSlots);
+  renderQueue('car-queue-list',  S.carQueue);
+  renderQueue('bike-queue-list', S.bikeQueue);
+  renderHistory();
+  renderStats();
+}
+
+function renderSlots(elId, slots){
+  const el = document.getElementById(elId);
+  el.innerHTML = slots.map(s=>{
+    const occ = !!s.vehicle;
+    return `<div class="slot ${occ?'occupied':'free'}" title="${occ?s.vehicle.number:s.id+': Free'}">
+      <div class="slot-badge"></div>
+      <div class="slot-id">${s.id}</div>
+      <div class="slot-status">${occ?'OCCP':'FREE'}</div>
+      ${occ?`<div class="slot-vnum">${s.vehicle.number}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderQueue(elId, queue){
+  const el = document.getElementById(elId);
+  if(!queue.length){
+    el.innerHTML='<span class="queue-empty">Empty</span>';
+  } else {
+    el.innerHTML = queue.map((v,i)=>
+      `<span class="q-chip" title="${v.number}"><span style="font-size:9px;opacity:.6">${i+1}.</span> ${v.number}</span>`
+    ).join('');
+  }
+}
+
+function renderHistory(){
+  const tbody = document.getElementById('history-body');
+  document.getElementById('hist-count').textContent = S.history.length;
+  if(!S.history.length){
+    tbody.innerHTML='<tr class="empty-row"><td colspan="6">No transactions yet. Park and exit vehicles to see history.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = S.history.map((r,i)=>`
+    <tr>
+      <td style="color:var(--text3);font-size:12px">${S.history.length-i}</td>
+      <td><mono>${r.number}</mono></td>
+      <td><span class="badge ${r.type==='CAR'?'badge-car':'badge-bike'}">${r.type}</span></td>
+      <td><mono>${r.slot}</mono></td>
+      <td>${r.hours}h</td>
+      <td class="fee-cell">₹${r.fee}</td>
+    </tr>`).join('');
+}
+
+function renderStats(){
+  const cp = S.carSlots.filter(s=>s.vehicle).length;
+  const bp = S.bikeSlots.filter(s=>s.vehicle).length;
+  const cq = S.carQueue.length;
+  const bq = S.bikeQueue.length;
+  document.getElementById('stat-cars').textContent  = cp;
+  document.getElementById('stat-bikes').textContent = bp;
+  document.getElementById('stat-queue').textContent = cq+bq;
+  document.getElementById('stat-rev').textContent   = '₹'+S.revenue.toLocaleString('en-IN');
+  document.getElementById('queue-count').textContent = cq+bq;
+
+  const sb = document.getElementById('summary-body');
+  const pct = n => `<div style="height:4px;background:var(--border);border-radius:2px;margin-top:5px"><div style="height:100%;width:${n}%;background:var(--green);border-radius:2px;transition:width .3s"></div></div>`;
+  sb.innerHTML = `
+    <div style="background:#F0FDF4;border:1px solid var(--green-b);border-radius:8px;padding:10px 12px">
+      <div style="font-size:11px;color:#15803D;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Car Slots</div>
+      <div style="font-size:22px;font-weight:600;color:var(--text);margin-top:2px">${cp}<span style="font-size:13px;color:var(--text3);font-weight:400"> / 10</span></div>
+      ${pct(cp*10)}
+    </div>
+    <div style="background:#FEF2F2;border:1px solid var(--red-b);border-radius:8px;padding:10px 12px">
+      <div style="font-size:11px;color:var(--red);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Bike Slots</div>
+      <div style="font-size:22px;font-weight:600;color:var(--text);margin-top:2px">${bp}<span style="font-size:13px;color:var(--text3);font-weight:400"> / 5</span></div>
+      ${pct(bp*20)}
+    </div>
+    <div style="background:#EFF4FF;border:1px solid #BFDBFE;border-radius:8px;padding:10px 12px">
+      <div style="font-size:11px;color:#1D4ED8;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Car Queue</div>
+      <div style="font-size:22px;font-weight:600;color:var(--text);margin-top:2px">${cq}</div>
+    </div>
+    <div style="background:#FFFBEB;border:1px solid var(--amber-b);border-radius:8px;padding:10px 12px">
+      <div style="font-size:11px;color:var(--amber);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Bike Queue</div>
+      <div style="font-size:22px;font-weight:600;color:var(--text);margin-top:2px">${bq}</div>
+    </div>`;
+}
+
+/* ── MSG HELPERS ── */
+function showMsg(id, text, type, dur=3500){
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg show '+type;
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.className='msg',dur);
+}
+function clearMsg(id){document.getElementById(id).className='msg'}
+
+/* ── HANDLERS ── */
+function handlePark(){
+  const num  = document.getElementById('park-num').value.trim().toUpperCase();
+  const type = document.getElementById('park-type').value;
+  if(!num){showMsg('park-msg','Please enter a vehicle number.','err');return}
+  if(num.length<2){showMsg('park-msg','Enter a valid vehicle number.','err');return}
+  const r = parkVehicle(num,type);
+  showMsg('park-msg',r.msg, r.ok?(r.queued?'info':'ok'):'err');
+  if(r.ok) document.getElementById('park-num').value='';
+  render();
+}
+
+function handleExit(){
+  const num   = document.getElementById('exit-num').value.trim().toUpperCase();
+  const hours = parseInt(document.getElementById('exit-hours').value,10);
+  if(!num){showMsg('exit-msg','Please enter a vehicle number.','err');return}
+  if(!hours||hours<1){showMsg('exit-msg','Enter valid hours (minimum 1).','err');return}
+  const r = exitVehicle(num,hours);
+  showMsg('exit-msg',r.msg,r.ok?'ok':'err');
+  if(r.ok){
+    document.getElementById('exit-num').value='';
+    document.getElementById('exit-hours').value='';
+  }
+  render();
+}
+
+function handleSearch(){
+  const num = document.getElementById('search-num').value.trim().toUpperCase();
+  if(!num){showMsg('search-msg','Please enter a vehicle number.','err');return}
+  clearMsg('search-msg');
+  const r = searchVehicle(num);
+  const el = document.getElementById('search-result');
+  el.textContent = r.msg;
+  el.className = 'search-result show';
+  if(!r.ok) el.style.cssText='background:#FEF2F2;border-color:var(--red-b);color:#B91C1C;display:block';
+  else el.style.cssText='';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.className='search-result',4000);
+}
+
+/* Enter key support */
+document.getElementById('park-num').addEventListener('keydown',e=>e.key==='Enter'&&handlePark());
+document.getElementById('exit-num').addEventListener('keydown',e=>e.key==='Enter'&&document.getElementById('exit-hours').focus());
+document.getElementById('exit-hours').addEventListener('keydown',e=>e.key==='Enter'&&handleExit());
+document.getElementById('search-num').addEventListener('keydown',e=>e.key==='Enter'&&handleSearch());
+
+/* Force uppercase on inputs */
+['park-num','exit-num','search-num'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',function(){this.value=this.value.toUpperCase()});
+});
+
+/* Initial render */
+render();
+</script>
+</body>
+</html>
